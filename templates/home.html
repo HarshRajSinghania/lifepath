@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Welcome to LifePath</h1>
+        <p class="hero-subtitle">Bridge the gap between your dreams and financial reality</p>
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <h3 class="text-center mb-4">Your Financial Future Starts Here</h3>
+                        <p class="text-muted text-center mb-4">
+                            LifePath helps you visualize the financial reality of your dreams. 
+                            In three simple steps, we'll show you exactly what it takes to live the life you want.
+                        </p>
+                        
+                        <div class="row text-center mb-4">
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                                    <h5>Dream</h5>
+                                    <p class="small text-muted">Define your ideal lifestyle and location</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <i class="fas fa-calculator fa-3x text-info mb-3"></i>
+                                    <h5>Reality</h5>
+                                    <p class="small text-muted">Document your current financial situation</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                                    <h5>Path</h5>
+                                    <p class="small text-muted">See the gap and plan your journey</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-rocket me-2"></i>Get Started
+                            </a>
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4><i class="fas fa-lightbulb text-warning me-2"></i>Why LifePath?</h4>
+                    <p>Traditional budgeting apps focus on cutting expenses. LifePath focuses on building the future you actually want to live.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Visual financial storytelling</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Long-term goal planning</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Education cost analysis</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Career path comparison</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4><i class="fas fa-users text-primary me-2"></i>Perfect For</h4>
+                    <p>Young adults making major life decisions about education, career, and lifestyle.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-graduation-cap text-primary me-2"></i>High school graduates</li>
+                        <li><i class="fas fa-university text-primary me-2"></i>College students</li>
+                        <li><i class="fas fa-briefcase text-primary me-2"></i>Career changers</li>
+                        <li><i class="fas fa-map-marked-alt text-primary me-2"></i>Location planners</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

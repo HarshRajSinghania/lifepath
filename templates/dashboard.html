@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - LifePath{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h2><i class="fas fa-chart-line me-2"></i>Your Financial Journey</h2>
+                    <p class="mb-0">Here's how your dreams compare to your projected reality</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                    <h5>Dream Cost</h5>
+                    <h3 class="text-primary">${{ "{:,.0f}".format(user_data.profile.dream.get('annual_dream_cost', 0)) }}</h3>
+                    <small class="text-muted">per year</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+                    <h5>Projected Salary</h5>
+                    <h3 class="text-success">${{ "{:,.0f}".format(user_data.profile.path.get('projected_starting_salary', 0)) }}</h3>
+                    <small class="text-muted">per year</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    {% if user_data.profile.path.get('estimated_loan_payment', 0) > 0 %}
+                        <i class="fas fa-graduation-cap fa-2x text-warning mb-2"></i>
+                        <h5>Loan Payment</h5>
+                        <h3 class="text-warning">${{ "{:,.0f}".format(user_data.profile.path.get('estimated_loan_payment', 0)) }}</h3>
+                        <small class="text-muted">per month</small>
+                    {% else %}
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h5>Student Debt</h5>
+                        <h3 class="text-success">$0</h3>
+                        <small class="text-muted">debt-free!</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    {% set gap = (user_data.profile.dream.get('annual_dream_cost', 0) - user_data.profile.path.get('projected_starting_salary', 0)) %}
+                    {% if gap <= 0 %}
+                        <i class="fas fa-thumbs-up fa-2x text-success mb-2"></i>
+                        <h5>Status</h5>
+                        <h3 class="text-success">On Track!</h3>
+                        <small class="text-muted">dreams achievable</small>
+                    {% else %}
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                        <h5>Gap</h5>
+                        <h3 class="text-danger">${{ "{:,.0f}".format(gap) }}</h3>
+                        <small class="text-muted">shortfall per year</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Master Comparison Chart -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Dream vs Reality</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="masterChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monthly Breakdown Pie Chart -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie me-2"></i>Monthly Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Flow Analysis -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calculator me-2"></i>Monthly Cash Flow Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="text-end">Monthly Amount</th>
+                                    <th class="text-end">Annual Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-success">
+                                    <td><strong>Projected Income</strong></td>
+                                    <td class="text-end">${{ "{:,.2f}".format(user_data.profile.path.get('projected_starting_salary', 0) / 12) }}</td>
+                                    <td class="text-end">${{ "{:,.2f}".format(user_data.profile.path.get('projected_starting_salary', 0)) }}</td>
+                                </tr>
+                                <tr class="table-danger">
+                                    <td>Dream Lifestyle Cost</td>
+                                    <td class="text-end">-${{ "{:,.2f}".format(user_data.profile.dream.get('annual_dream_cost', 0) / 12) }}</td>
+                                    <td class="text-end">-${{ "{:,.2f}".format(user_data.profile.dream.get('annual_dream_cost', 0)) }}</td>
+                                </tr>
+                                {% if user_data.profile.path.get('estimated_loan_payment', 0) > 0 %}
+                                <tr class="table-warning">
+                                    <td>Student Loan Payment</td>
+                                    <td class="text-end">-${{ "{:,.2f}".format(user_data.profile.path.get('estimated_loan_payment', 0)) }}</td>
+                                    <td class="text-end">-${{ "{:,.2f}".format(user_data.profile.path.get('estimated_loan_payment', 0) * 12) }}</td>
+                                </tr>
+                                {% endif %}
+                                {% for expense in user_data.profile.reality.expenses %}
+                                <tr>
+                                    <td>{{ expense.category }}</td>
+                                    <td class="text-end">-${{ "{:,.2f}".format(expense.amount) }}</td>
+                                    <td class="text-end">-${{ "{:,.2f}".format(expense.amount * 12) }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr class="table-info">
+                                    <td><strong>Net Cash Flow</strong></td>
+                                    {% set monthly_net = (user_data.profile.path.get('projected_starting_salary', 0) / 12) - (user_data.profile.dream.get('annual_dream_cost', 0) / 12) - user_data.profile.path.get('estimated_loan_payment', 0) - (user_data.profile.reality.get('expenses', [])|sum(attribute='amount') or 0) %}
+                                    <td class="text-end"><strong>${{ "{:,.2f}".format(monthly_net) }}</strong></td>
+                                    <td class="text-end"><strong>${{ "{:,.2f}".format(monthly_net * 12) }}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Items -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    {% set monthly_net = (user_data.profile.path.get('projected_starting_salary', 0) / 12) - (user_data.profile.dream.get('annual_dream_cost', 0) / 12) - user_data.profile.path.get('estimated_loan_payment', 0) - (user_data.profile.reality.get('expenses', [])|sum(attribute='amount') or 0) %}
+                    {% if monthly_net >= 0 %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Great news!</strong> Your projected income can support your dream lifestyle.
+                        </div>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-piggy-bank text-success me-2"></i>Start saving the extra ${{ "{:,.0f}".format(monthly_net) }}/month</li>
+                            <li><i class="fas fa-chart-line text-primary me-2"></i>Consider investing for long-term growth</li>
+                            <li><i class="fas fa-shield-alt text-info me-2"></i>Build an emergency fund</li>
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Gap Alert:</strong> You're short ${{ "{:,.0f}".format(-monthly_net) }}/month
+                        </div>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-up text-success me-2"></i>Look for higher-paying career paths</li>
+                            <li><i class="fas fa-cut text-warning me-2"></i>Consider reducing dream lifestyle costs</li>
+                            <li><i class="fas fa-briefcase text-primary me-2"></i>Explore side income opportunities</li>
+                            <li><i class="fas fa-graduation-cap text-info me-2"></i>Investigate more affordable education options</li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5><i class="fas fa-tools me-2"></i>Next Steps</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('subscription_audit') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Audit Your Subscriptions
+                        </a>
+                        <a href="{{ url_for('onboarding_dream') }}" class="btn btn-outline-info">
+                            <i class="fas fa-edit me-2"></i>Update Your Dream
+                        </a>
+                        <a href="{{ url_for('onboarding_reality') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-calculator me-2"></i>Update Current Reality
+                        </a>
+                        <a href="{{ url_for('onboarding_path') }}" class="btn btn-outline-success">
+                            <i class="fas fa-road me-2"></i>Change Your Path
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data from Flask
+    const dreamCost = {{ user_data.profile.dream.get('annual_dream_cost', 0) }};
+    const projectedSalary = {{ user_data.profile.path.get('projected_starting_salary', 0) }};
+    const loanPayment = {{ user_data.profile.path.get('estimated_loan_payment', 0) * 12 }};
+    const currentExpenses = {{ (user_data.profile.reality.get('expenses', [])|sum(attribute='amount') or 0) * 12 }};
+    
+    // Master Comparison Chart
+    const masterCtx = document.getElementById('masterChart').getContext('2d');
+    new Chart(masterCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Annual Income', 'Dream Cost', 'Available After Loans & Expenses'],
+            datasets: [{
+                label: 'Amount ($)',
+                data: [
+                    projectedSalary,
+                    dreamCost,
+                    projectedSalary - loanPayment - currentExpenses
+                ],
+                backgroundColor: [
+                    'rgba(39, 174, 96, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(52, 152, 219, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(39, 174, 96, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(52, 152, 219, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '$' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Monthly Breakdown Pie Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyIncome = projectedSalary / 12;
+    const monthlyDream = dreamCost / 12;
+    const monthlyLoan = {{ user_data.profile.path.get('estimated_loan_payment', 0) }};
+    const monthlyExpenses = {{ user_data.profile.reality.expenses|sum(attribute='amount') }};
+    const remaining = monthlyIncome - monthlyDream - monthlyLoan - monthlyExpenses;
+    
+    new Chart(monthlyCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Dream Lifestyle', 'Loan Payments', 'Current Expenses', 'Remaining'],
+            datasets: [{
+                data: [monthlyDream, monthlyLoan, monthlyExpenses, Math.max(0, remaining)],
+                backgroundColor: [
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(243, 156, 18, 0.8)',
+                    'rgba(155, 89, 182, 0.8)',
+                    'rgba(39, 174, 96, 0.8)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const percentage = ((context.parsed / monthlyIncome) * 100).toFixed(1);
+                            return context.label + ': $' + context.parsed.toLocaleString() + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

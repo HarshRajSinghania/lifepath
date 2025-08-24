@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Subscription Audit - LifePath{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h3><i class="fas fa-search me-2"></i>Subscription Audit Tool</h3>
+                    <p class="mb-0">Review and manage your recurring expenses</p>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Pro Tip:</strong> The average person has 12 active subscriptions and spends $273/month on them. 
+                        Let's see how you compare!
+                    </div>
+                    
+                    <!-- Current Subscriptions -->
+                    <h5><i class="fas fa-list me-2"></i>Your Current Subscriptions</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-striped" id="subscriptionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th class="text-end">Monthly Cost</th>
+                                    <th class="text-end">Annual Cost</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total_monthly = 0 %}
+                                {% for expense in user_data.profile.reality.expenses %}
+                                    {% set total_monthly = total_monthly + expense.amount %}
+                                    <tr>
+                                        <td>{{ expense.category }}</td>
+                                        <td class="text-end">${{ "{:,.2f}".format(expense.amount) }}</td>
+                                        <td class="text-end">${{ "{:,.2f}".format(expense.amount * 12) }}</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-danger" onclick="removeExpense({{ loop.index0 }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                {% if user_data.profile.reality.expenses|length == 0 %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No subscriptions added yet</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot class="table-dark">
+                                <tr>
+                                    <th>Total</th>
+                                    <th class="text-end">${{ "{:,.2f}".format(total_monthly) }}</th>
+                                    <th class="text-end">${{ "{:,.2f}".format(total_monthly * 12) }}</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- Add New Subscription -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6><i class="fas fa-plus me-2"></i>Add New Subscription</h6>
+                            <form id="addSubscriptionForm" class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="newCategory" placeholder="Service name (e.g., Netflix)" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="newAmount" placeholder="15.99" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Insights -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6><i class="fas fa-chart-pie me-2"></i>Subscription Insights</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Monthly Total:</span>
+                                            <strong>${{ "{:,.2f}".format(total_monthly) }}</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Annual Total:</span>
+                                            <strong>${{ "{:,.2f}".format(total_monthly * 12) }}</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between text-muted">
+                                            <span>Average (US):</span>
+                                            <span>$273/month</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if total_monthly > 273 %}
+                                        <div class="alert alert-warning alert-sm">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            You're spending ${{ "{:,.0f}".format(total_monthly - 273) }} above average
+                                        </div>
+                                    {% elif total_monthly < 273 %}
+                                        <div class="alert alert-success alert-sm">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            You're saving ${{ "{:,.0f}".format(273 - total_monthly) }} vs average
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6><i class="fas fa-piggy-bank me-2"></i>Savings Opportunities</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            Cancel unused subscriptions
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            Switch to annual plans (often 15-20% cheaper)
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            Share family plans with friends/family
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            Look for student discounts
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            Bundle services for better rates
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Impact on Dreams -->
+                    {% if user_data.profile.dream.get('annual_dream_cost') %}
+                    <div class="card mt-4 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6><i class="fas fa-star me-2"></i>Impact on Your Dreams</h6>
+                        </div>
+                        <div class="card-body">
+                            {% set dream_monthly = user_data.profile.dream.annual_dream_cost / 12 %}
+                            {% set subscription_percentage = (total_monthly / dream_monthly * 100) if dream_monthly > 0 else 0 %}
+                            
+                            <p>Your subscriptions represent <strong>{{ "{:.1f}".format(subscription_percentage) }}%</strong> of your monthly dream lifestyle cost.</p>
+                            
+                            {% if total_monthly > 0 %}
+                                <p class="text-muted">
+                                    If you reduced subscriptions by 25%, you'd save 
+                                    <strong>${{ "{:,.0f}".format(total_monthly * 0.25 * 12) }}</strong> annually - 
+                                    that's {{ "{:.1f}".format(total_monthly * 0.25 * 12 / user_data.profile.dream.annual_dream_cost * 100) }}% 
+                                    closer to affording your dream lifestyle!
+                                </p>
+                            {% endif %}
+                            
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ [subscription_percentage, 100]|min }}%" 
+                                     aria-valuenow="{{ subscription_percentage }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <small class="text-muted">Subscriptions as % of dream cost</small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card mt-4 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Complete Your Profile</h6>
+                        </div>
+                        <div class="card-body">
+                            <p>To see how your subscriptions impact your dream lifestyle, please complete your onboarding first.</p>
+                            <a href="{{ url_for('onboarding_dream') }}" class="btn btn-warning">
+                                <i class="fas fa-star me-2"></i>Define Your Dreams
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addForm = document.getElementById('addSubscriptionForm');
+    
+    addForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const category = document.getElementById('newCategory').value;
+        const amount = parseFloat(document.getElementById('newAmount').value);
+        
+        if (!category || !amount) return;
+        
+        fetch('/api/expense', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                category: category,
+                amount: amount
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh to show updated data
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to add subscription. Please try again.');
+        });
+    });
+});
+
+function removeExpense(index) {
+    if (confirm('Are you sure you want to remove this subscription?')) {
+        fetch(`/api/expense/${index}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Refresh to show updated data
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to remove subscription. Please try again.');
+        });
+    }
+}
+</script>
+{% endblock %}

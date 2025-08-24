@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Path Builder - LifePath{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="step-indicator">
+                <div class="step completed">1</div>
+                <div class="step completed">2</div>
+                <div class="step active">3</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2><i class="fas fa-road text-success me-2"></i>Your Path Forward</h2>
+                        <p class="text-muted">Choose your post-high-school journey</p>
+                    </div>
+                    
+                    <form method="POST" id="pathForm">
+                        <div class="mb-4">
+                            <label class="form-label">What's your plan after high school?</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="plan" id="college" value="college" required>
+                                        <label class="form-check-label" for="college">
+                                            <i class="fas fa-graduation-cap me-2"></i>College/Trade School
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="plan" id="workforce" value="workforce" required>
+                                        <label class="form-check-label" for="workforce">
+                                            <i class="fas fa-briefcase me-2"></i>Enter Workforce
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- College/Trade School Section -->
+                        <div id="collegeSection" class="d-none">
+                            <h5><i class="fas fa-university me-2"></i>Education Details</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="college_name" class="form-label">School Name</label>
+                                    <input type="text" class="form-control" id="college_name" name="college_name" 
+                                           placeholder="e.g., State University">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="years" class="form-label">Program Length (Years)</label>
+                                    <select class="form-control" id="years" name="years">
+                                        <option value="2">2 Years (Associate/Trade)</option>
+                                        <option value="4" selected>4 Years (Bachelor's)</option>
+                                        <option value="6">6 Years (Master's)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="annual_tuition" class="form-label">Annual Tuition & Fees</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="annual_tuition" name="annual_tuition" 
+                                               placeholder="10000" step="0.01">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="financial_aid" class="form-label">Annual Financial Aid</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="financial_aid" name="financial_aid" 
+                                               placeholder="5000" step="0.01">
+                                    </div>
+                                    <div class="form-text">Scholarships, grants, family help</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Projected Salary Section -->
+                        <div id="salarySection" class="d-none">
+                            <div class="mb-4">
+                                <label for="projected_starting_salary" class="form-label">Expected Starting Salary</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="projected_starting_salary" name="projected_starting_salary" 
+                                           placeholder="55000" step="0.01" required>
+                                </div>
+                                <div class="form-text">Annual salary you expect to earn after graduation/training</div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info d-none" id="collegeAlert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> We'll calculate your estimated loan payments and show how they impact your ability to afford your dream lifestyle.
+                        </div>
+                        
+                        <div class="alert alert-success d-none" id="workforceAlert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Great choice:</strong> Entering the workforce means no student debt, but consider how your starting salary compares to your dream costs.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('onboarding_reality') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Reality
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-chart-line me-2"></i>See My Dashboard
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const collegeRadio = document.getElementById('college');
+    const workforceRadio = document.getElementById('workforce');
+    const collegeSection = document.getElementById('collegeSection');
+    const salarySection = document.getElementById('salarySection');
+    const collegeAlert = document.getElementById('collegeAlert');
+    const workforceAlert = document.getElementById('workforceAlert');
+    
+    function toggleSections() {
+        if (collegeRadio.checked) {
+            collegeSection.classList.remove('d-none');
+            salarySection.classList.remove('d-none');
+            collegeAlert.classList.remove('d-none');
+            workforceAlert.classList.add('d-none');
+            
+            // Make college fields required
+            document.getElementById('college_name').required = true;
+            document.getElementById('annual_tuition').required = true;
+        } else if (workforceRadio.checked) {
+            collegeSection.classList.add('d-none');
+            salarySection.classList.remove('d-none');
+            collegeAlert.classList.add('d-none');
+            workforceAlert.classList.remove('d-none');
+            
+            // Remove college field requirements
+            document.getElementById('college_name').required = false;
+            document.getElementById('annual_tuition').required = false;
+        }
+    }
+    
+    collegeRadio.addEventListener('change', toggleSections);
+    workforceRadio.addEventListener('change', toggleSections);
+});
+</script>
+{% endblock %}

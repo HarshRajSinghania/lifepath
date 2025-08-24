@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Reality Check - LifePath{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="step-indicator">
+                <div class="step completed">1</div>
+                <div class="step active">2</div>
+                <div class="step">3</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2><i class="fas fa-calculator text-info me-2"></i>Current Reality</h2>
+                        <p class="text-muted">Document your current financial situation</p>
+                    </div>
+                    
+                    <form method="POST" id="realityForm">
+                        <div class="mb-4">
+                            <label for="monthly_income" class="form-label">Current Monthly Income</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="monthly_income" name="monthly_income" 
+                                       placeholder="1200" step="0.01" required>
+                            </div>
+                            <div class="form-text">Include all sources: job, allowance, side hustles</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5><i class="fas fa-list me-2"></i>Current Monthly Expenses</h5>
+                            <p class="text-muted">Add your regular monthly expenses</p>
+                            
+                            <div id="expensesList">
+                                <div class="expense-item mb-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <input type="text" class="form-control" name="expense_category" 
+                                                   placeholder="e.g., Phone Bill" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" class="form-control" name="expense_amount" 
+                                                       placeholder="50" step="0.01" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-outline-danger remove-expense" disabled>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-primary" id="addExpense">
+                                <i class="fas fa-plus me-2"></i>Add Another Expense
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Be Honest:</strong> Include all your current expenses, even small ones. This helps create an accurate baseline for comparison.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('onboarding_dream') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dream
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-arrow-right me-2"></i>Next: Your Path
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addExpenseBtn = document.getElementById('addExpense');
+    const expensesList = document.getElementById('expensesList');
+    
+    function updateRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.remove-expense');
+        removeButtons.forEach((btn, index) => {
+            btn.disabled = removeButtons.length <= 1;
+        });
+    }
+    
+    function addExpenseItem() {
+        const expenseItem = document.createElement('div');
+        expenseItem.className = 'expense-item mb-3';
+        expenseItem.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="expense_category" 
+                           placeholder="e.g., Netflix Subscription" required>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" name="expense_amount" 
+                               placeholder="15.49" step="0.01" required>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-danger remove-expense">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        expensesList.appendChild(expenseItem);
+        updateRemoveButtons();
+    }
+    
+    addExpenseBtn.addEventListener('click', addExpenseItem);
+    
+    expensesList.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-expense')) {
+            e.target.closest('.expense-item').remove();
+            updateRemoveButtons();
+        }
+    });
+    
+    updateRemoveButtons();
+});
+</script>
+{% endblock %}
