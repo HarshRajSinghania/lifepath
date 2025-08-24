@@ -5,7 +5,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 from calculations import calculate_loan_payment, calculate_annual_dream_cost
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_change_in_production')
