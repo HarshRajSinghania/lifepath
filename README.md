@@ -162,7 +162,7 @@ Simply connect your MongoDB Atlas cluster and set the environment variables.
 
 ## License
 
-This project is licensed under the MIT License.
+This is a submission to a hackathon. You may read the code but you are not allowed to use it or modify it for any purpose.
 
 ## Support
 
