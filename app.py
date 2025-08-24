@@ -44,7 +44,7 @@ else:
 
 # Development mode helper functions
 def get_user_by_username(username):
-    if users_collection:
+    if users_collection is not None:
         return users_collection.find_one({'username': username})
     else:
         for user_id, user_data in dev_users.items():
@@ -53,14 +53,18 @@ def get_user_by_username(username):
         return None
 
 def get_user_by_id(user_id):
-    if users_collection:
-        return users_collection.find_one({'_id': ObjectId(user_id)})
+    if users_collection is not None:
+        try:
+            return users_collection.find_one({'_id': ObjectId(user_id)})
+        except:
+            # If ObjectId conversion fails, it might be a dev mode ID stored in session
+            return None
     else:
         return dev_users.get(user_id)
 
 def create_user(user_doc):
     global dev_user_counter
-    if users_collection:
+    if users_collection is not None:
         result = users_collection.insert_one(user_doc)
         return str(result.inserted_id)
     else:
@@ -70,11 +74,15 @@ def create_user(user_doc):
         return user_id
 
 def update_user(user_id, update_data):
-    if users_collection:
-        users_collection.update_one(
-            {'_id': ObjectId(user_id)},
-            update_data
-        )
+    if users_collection is not None:
+        try:
+            users_collection.update_one(
+                {'_id': ObjectId(user_id)},
+                update_data
+            )
+        except:
+            # If ObjectId conversion fails, it might be a dev mode ID stored in session
+            pass
     else:
         if user_id in dev_users:
             for key, value in update_data.get('$set', {}).items():
@@ -100,9 +108,9 @@ def update_user(user_id, update_data):
 # Routes
 @app.route('/')
 def home():
-    if 'user_id' in session:
-        return redirect(url_for('dashboard'))
-    return render_template('home.html')
+    # Allow both logged-in and non-logged-in users to see homepage
+    user_logged_in = 'user_id' in session
+    return render_template('home.html', user_logged_in=user_logged_in)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
